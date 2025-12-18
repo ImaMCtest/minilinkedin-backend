@@ -37,6 +37,10 @@ app.use('/api/publicaciones', require('./routes/publicaciones'));
 app.use('/api/recursos', require('./routes/recursos'));
 app.use('/api/empleos', require('./routes/empleos'));
 
+// FAVICON (EVITA CRASH)
+app.get("/favicon.ico", (req, res) => res.status(204).end());
+app.get("/favicon.png", (req, res) => res.status(204).end());
+
 // Ruta de prueba para ver si el servidor vive
 app.get('/', (req, res) => res.send('API Mini-LinkedIn funcionando 🚀'));
 
