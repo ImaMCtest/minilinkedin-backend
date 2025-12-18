@@ -8,16 +8,18 @@ const app = express();
 // ==========================================
 // 1. MIDDLEWARES
 // ==========================================
-const corsOptions = {
-    origin: [
-        'http://localhost:5173',                            // Tu PC
-        'https://minilinkedin-frontend.vercel.app',         // URL Producción limpia
-        'https://minilinkedin-frontend-yhpp.vercel.app'     // <--- ¡ESTA ES LA QUE TE FALTABA! (La de tu error)
-    ],
-    credentials: true, // Importante para que pasen las cookies/headers si los usas
-    optionsSuccessStatus: 200
-};
-app.use(cors(corsOptions));
+// Opción Nuclear: Permitir TODO (Para que deje de molestar Vercel)
+app.use(cors());
+
+// SI QUIERES MANTENER LA SEGURIDAD, PERO FLEXIBLE, USA ESTO:
+/*
+app.use(cors({
+    origin: '*', // Permite acceso desde cualquier URL
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+*/
+
 app.use(express.json());
 
 // ==========================================
