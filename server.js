@@ -8,12 +8,13 @@ const app = express();
 // ==========================================
 // 1. MIDDLEWARES
 // ==========================================
-// Configuración de CORS para aceptar peticiones de tu PC y de Vercel
 const corsOptions = {
     origin: [
-        'http://localhost:5173',                  // Tu Frontend Local
-        'https://minilinkedin-frontend.vercel.app' // Tu Frontend en Vercel (¡ACTUALIZA ESTO CUANDO TENGAS LA URL!)
+        'http://localhost:5173',                            // Tu PC
+        'https://minilinkedin-frontend.vercel.app',         // URL Producción limpia
+        'https://minilinkedin-frontend-yhpp.vercel.app'     // <--- ¡ESTA ES LA QUE TE FALTABA! (La de tu error)
     ],
+    credentials: true, // Importante para que pasen las cookies/headers si los usas
     optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
