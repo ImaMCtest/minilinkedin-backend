@@ -5,20 +5,10 @@ require('dotenv').config();
 
 const app = express();
 
-// ==========================================
-// 1. MIDDLEWARES
-// ==========================================
-// Opción Nuclear: Permitir TODO (Para que deje de molestar Vercel)
+// En tu server.js
 app.use(cors());
-
-// SI QUIERES MANTENER LA SEGURIDAD, PERO FLEXIBLE, USA ESTO:
-/*
-app.use(cors({
-    origin: '*', // Permite acceso desde cualquier URL
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
-*/
+// Opcional: Si quieres ser ultra específico, asegúrate que las opciones estén así:
+// app.use(cors({ origin: '*', optionsSuccessStatus: 200 }));
 
 app.use(express.json());
 
