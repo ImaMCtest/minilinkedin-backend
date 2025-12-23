@@ -7,9 +7,36 @@ mongoose.set('bufferCommands', false);
 
 const app = express();
 
-if (process.env.NODE_ENV !== 'production') {
-    app.use(cors());
-}
+// ==========================================
+// 1. CONFIGURACIÓN DE CORS (CORREGIDO)
+// ==========================================
+// Definimos los orígenes permitidos (Local y tu Vercel)
+const allowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://minilinkedin-frontend.vercel.app' // Tu frontend en producción
+];
+
+const corsOptions = {
+    origin: function (origin, callback) {
+        // Permitir solicitudes sin origen (como Postman o Server-to-Server)
+        if (!origin) return callback(null, true);
+
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Bloqueado por CORS: Origen no permitido'));
+        }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'], // 👈 ESTO SOLUCIONA TU ERROR DE CABECERAS
+    credentials: true
+};
+
+// Aplicamos CORS globalmente (EN TODOS LOS ENTORNOS)
+app.use(cors(corsOptions));
+// Habilitar pre-flight para todas las rutas
+app.options('*', cors(corsOptions));
 
 app.use(express.json());
 
@@ -30,7 +57,7 @@ const dbConnection = mongoose.connect(process.env.MONGODB_URI, clientOptions)
         return null; // Retornamos null para manejarlo abajo
     });
 
-// --- NUEVO: MIDDLEWARE QUE OBLIGA A ESPERAR A LA DB ---
+// --- MIDDLEWARE QUE OBLIGA A ESPERAR A LA DB ---
 app.use(async (req, res, next) => {
     // Si la conexión no está lista (1 = connected), esperamos la promesa
     if (mongoose.connection.readyState !== 1) {
@@ -62,6 +89,8 @@ app.get('/', (req, res) => {
 
 // 4. ARRANQUE
 const PORT = process.env.PORT || 5000;
+
+// En Vercel no hace falta el app.listen para serverless, pero si lo usas, ponlo así:
 if (process.env.NODE_ENV !== 'production') {
     app.listen(PORT, () => console.log(`🚀 Servidor corriendo en puerto ${PORT}`));
 }
