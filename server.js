@@ -87,12 +87,16 @@ app.get('/', (req, res) => {
     res.send(`API Mini-LinkedIn funcionando 🚀 | DB: ${dbStatus}`);
 });
 
-// 4. ARRANQUE
 const PORT = process.env.PORT || 5000;
 
-// En Vercel no hace falta el app.listen para serverless, pero si lo usas, ponlo así:
-if (process.env.NODE_ENV !== 'production') {
-    app.listen(PORT, () => console.log(`🚀 Servidor corriendo en puerto ${PORT}`));
+// 4. ARRANQUE (MODIFICADO PARA NO ROMPER VERCEL)
+// Usamos "require.main === module" para saber si el archivo se está ejecutando directamente (en tu PC).
+// Si es Vercel quien lo importa, este bloque se salta y evitamos el error de puerto.
+if (require.main === module) {
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => {
+        console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
+    });
 }
 
 module.exports = app;
