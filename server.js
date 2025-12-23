@@ -5,7 +5,7 @@ require('dotenv').config();
 
 const app = express();
 
-// 1. CONFIGURACIÓN CORS (Crucial para que el frontend entre)
+// 1. CONFIGURACIÓN CORS
 const allowedOrigins = [
     'http://localhost:5173',
     'http://localhost:3000',
@@ -28,17 +28,33 @@ app.use(cors({
 
 app.use(express.json());
 
-// 2. CONEXIÓN MONGODB (MODO SERVERLESS)
-// Eliminamos bufferCommands: false para que Mongoose "espere" si la conexión es lenta
-// en lugar de crashear la app.
-mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log("✅ MongoDB Conectado"))
-    .catch(err => console.error("❌ Error Mongo:", err));
+// 2. CONEXIÓN INTELIGENTE (Wait for DB)
+// Este middleware se asegura de que la DB esté lista antes de procesar nada
+app.use(async (req, res, next) => {
+    // Si ya estamos conectados, pasamos
+    if (mongoose.connection.readyState === 1) {
+        return next();
+    }
+
+    // Si no, intentamos conectar y ESPERAMOS
+    try {
+        await mongoose.connect(process.env.MONGODB_URI);
+        console.log("✅ MongoDB Conectado en caliente");
+        next();
+    } catch (error) {
+        console.error("❌ Error conectando a DB:", error);
+        // Esto te mostrará el error exacto en el navegador si falla
+        return res.status(500).json({
+            error: 'Error de Conexión a Base de Datos',
+            detalle: error.message
+        });
+    }
+});
 
 // 3. RUTAS
 app.get('/', (req, res) => {
-    const status = mongoose.connection.readyState === 1 ? 'Conectado 🟢' : 'Desconectado 🔴';
-    res.send(`API Funcionando 🚀 | Estado DB: ${status}`);
+    // Como usamos el middleware arriba, si llegamos aquí, la DB está conectada SÍ o SÍ
+    res.send(`API Funcionando 🚀 | Estado DB: Conectado 🟢`);
 });
 
 app.use('/api/usuarios', require('./routes/usuarios'));
@@ -46,8 +62,7 @@ app.use('/api/publicaciones', require('./routes/publicaciones'));
 app.use('/api/recursos', require('./routes/recursos'));
 app.use('/api/empleos', require('./routes/empleos'));
 
-// 4. ARRANQUE SEGURO
-// Solo escucha puerto en local. En Vercel, exportamos la app.
+// 4. ARRANQUE
 if (require.main === module) {
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => console.log(`🚀 Server local en puerto ${PORT}`));
