@@ -89,9 +89,8 @@ app.get('/', (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-// 4. ARRANQUE (MODIFICADO PARA NO ROMPER VERCEL)
-// Usamos "require.main === module" para saber si el archivo se está ejecutando directamente (en tu PC).
-// Si es Vercel quien lo importa, este bloque se salta y evitamos el error de puerto.
+// 4. ARRANQUE SEGURO
+// Este "if" asegura que app.listen SOLO se ejecute en tu PC, no en Vercel.
 if (require.main === module) {
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {
